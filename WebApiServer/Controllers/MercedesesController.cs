@@ -1,7 +1,11 @@
-﻿using Data.Data;
+﻿using AutoMapper;
+using Core.Dto;
+using Core.Models;
+using Data.Data;
 using Data.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebApiServer.Controllers
 {
@@ -10,14 +14,18 @@ namespace WebApiServer.Controllers
     public class MercedesesController : ControllerBase
     {
         private readonly CatalogDbContext context;
-        public MercedesesController(CatalogDbContext context)
+        private readonly IMapper mapper;
+
+        public MercedesesController(CatalogDbContext context, IMapper mapper)
         {
             this.context = context;
+            this.mapper = mapper;
         }
         [HttpGet("all")]
         public IActionResult GetAll() 
         {
-            return Ok(context.Mercedeses.ToList());
+            var mercedes = mapper.Map<List<MercedesDto>>(context.Mercedeses.ToList());
+            return Ok(mercedes.ToList());
         }
         [HttpGet]
         public IActionResult Get(int id)
@@ -25,15 +33,16 @@ namespace WebApiServer.Controllers
             var mercedes = context.Mercedeses.Find(id);
             if (mercedes == null) return NotFound();
 
-            return Ok(mercedes);
+            context.Entry(mercedes).Reference(x => x.BrandOfCar).Load();
+            return Ok(mapper.Map<MercedesDto>(mercedes));
         }
 
         [HttpPost]
-        public IActionResult Create(Mercedes model)
+        public IActionResult Create(CreateMercedesModel model)
         {
             if (!ModelState.IsValid) return BadRequest();
 
-            context.Mercedeses.Add(model);
+            context.Mercedeses.Add(mapper.Map<Mercedes>(model));
             context.SaveChanges();
 
             return Ok();

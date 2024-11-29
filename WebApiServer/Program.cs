@@ -9,7 +9,7 @@ namespace WebApiServer
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            string connectionString = builder.Configuration.GetConnectionString("LocalDb")!;
+            string connectionString = builder.Configuration.GetConnectionString("SomeeDB")!;
 
             // Add services to the container.
 
